@@ -1,0 +1,18 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:gravity="center" android:padding="20dp">
+    <TextView android:id="@+id/txtTitle" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:text="Location Based Messaging App"
+        android:textSize="24sp" android:textStyle="bold" android:layout_marginBottom="30dp"/>
+    <Button android:id="@+id/btnLocation" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:text="Get Current Location"/>
+    <TextView android:id="@+id/txtLatitude" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:text="Latitude : " android:textSize="18sp"
+        android:layout_marginTop="25dp"/>
+    <TextView android:id="@+id/txtLongitude" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:text="Longitude : "
+        android:textSize="18sp"/>
+    <TextView android:id="@+id/txtMessage" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:text="Location Message"
+        android:textSize="20sp" android:textStyle="bold" android:layout_marginTop="25dp"/>
+</LinearLayout>

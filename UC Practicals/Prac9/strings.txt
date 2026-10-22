@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">HCIApp</string>
+    <string name="title">Human-Computer Interaction</string>
+    <string name="name_hint">Enter your name</string>
+    <string name="submit">Submit</string>
+    <string name="result">Your result will appear here</string>
+    <string name="empty_name">Please enter your name</string>
+    <string name="success">Information submitted successfully!</string>
+    <string name="hello_user">Hello %1$s!</string>
+</resources>

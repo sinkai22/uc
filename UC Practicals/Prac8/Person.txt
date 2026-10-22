@@ -1,0 +1,22 @@
+package practical8;
+import dk.pervasive.jcaf.ContextEvent;
+import dk.pervasive.jcaf.entity.GenericEntity;
+public class Person extends GenericEntity {
+    private String name;
+    public Person(String id, String name) {
+        super(id);
+        this.name = name;
+    }
+    public String getName() {
+        return name;
+    }
+    @Override
+    public void contextChanged(ContextEvent event) {
+        System.out.println("================================");
+        System.out.println("CONTEXT CHANGE DETECTED");
+        System.out.println("Person: " + name);
+        System.out.println("Entity ID: " + getId());
+        System.out.println("Context item: " + event.getItem());
+        System.out.println("================================");
+    }
+}

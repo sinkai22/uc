@@ -1,0 +1,15 @@
+from flask import Flask, request, jsonify
+app = Flask(__name__)
+@app.route("/message", methods=["POST"])
+def receive_message():
+    data = request.get_json()
+    message = data.get("message")
+    print("================================")
+    print("UPSTREAM MESSAGE RECEIVED")
+    print("Message:", message)
+    print("================================")
+    return jsonify({
+        "status": "success",
+        "message": "Message received by server"
+    })
+app.run(host="0.0.0.0", port=5000)

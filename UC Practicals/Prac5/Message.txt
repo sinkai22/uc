@@ -1,0 +1,13 @@
+package com.example.groupmessaging;
+public class Message {
+   public String sender;
+   public String text;
+   // Empty constructor required by Firebase
+   public Message() {
+   }
+   // Constructor for creating a message
+   public Message(String sender, String text) {
+       this.sender = sender;
+       this.text = text;
+   }
+}

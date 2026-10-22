@@ -1,0 +1,77 @@
+package com.example.groupmessaging;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+public class chatActivity extends AppCompatActivity {
+   TextView tvGroup, tvMessages;
+   EditText etMessage;
+   Button btnSend;
+   String name, group;
+   DatabaseReference databaseReference;
+   @Override
+   protected void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+       setContentView(R.layout.activity_chat);
+       // Connect Java code with XML views
+       tvGroup = findViewById(R.id.tvGroup);
+       tvMessages = findViewById(R.id.tvMessages);
+       etMessage = findViewById(R.id.etMessage);
+       btnSend = findViewById(R.id.btnSend);
+       // Get name and group from MainActivity
+       name = getIntent().getStringExtra("name");
+       group = getIntent().getStringExtra("group");
+tvGroup.setText("Group: " + group);
+// Firebase path for this group
+databaseReference = FirebaseDatabase.getInstance()
+               .getReference("groups")
+               .child(group);
+// Send message
+btnSend.setOnClickListener(v -> sendMessage());
+// Receive messages
+receiveMessages();
+   }
+private void sendMessage() {
+       String text = etMessage.getText().toString().trim();
+if (!text.isEmpty()) {
+           String id = databaseReference.push().getKey();
+           Message message = new Message(name, text);
+if (id != null) {
+databaseReference.child(id).setValue(message);
+           }
+etMessage.setText("");
+       }
+   }
+private void receiveMessages() {
+databaseReference.addValueEventListener(
+new ValueEventListener() {
+@Override
+public void onDataChange(@NonNull DataSnapshot snapshot) 
+{
+                       String allMessages = "";
+for (DataSnapshot dataSnapshot :
+                               snapshot.getChildren()) {
+                           Message message =
+                                   dataSnapshot.getValue(Message.class);
+if (message != null) {
+                               allMessages += message.sender + ": "
++ message.text + "\n\n";
+                           }
+                       }
+                       tvMessages.setText(allMessages);
+                   }
+                   @Override
+                   public void onCancelled(
+                           @NonNull DatabaseError error) {
+                   }
+               });
+   }
+}

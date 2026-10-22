@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">LocationMessagingApp</string>
+    <string name="latitude">Latitude : %1$.6f</string>
+    <string name="longitude">Longitude : %1$.6f</string>
+    <string name="welcome_message">Welcome to Mumbai Harshita</string>
+    <string name="outside_message">You are outside Mumbai</string>
+    <string name="unable_location">Unable to fetch location.</string>
+    <string name="permission_denied">Location Permission Denied</string>
+</resources>
