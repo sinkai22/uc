@@ -1,0 +1,299 @@
+
+package com.example.practical.gpstrace;
+
+import android.Manifest;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+public class MainActivity extends AppCompatActivity
+        implements LocationListener {
+
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 100;
+
+    private TextView t1, t2, t3;
+    private Button b1;
+    private LocationManager locationManager;
+
+    private double lat = 0.0;
+    private double longg = 0.0;
+
+    // College coordinates
+    private static final double COLLEGE_LAT = 19.205933;
+    private static final double COLLEGE_LONG = 72.873450;
+    private static final float COLLEGE_RADIUS = 200;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Connect XML elements
+        t1 = findViewById(R.id.textView);
+        t2 = findViewById(R.id.textView3);
+        t3 = findViewById(R.id.textView2);
+        b1 = findViewById(R.id.button);
+
+        // Get Location Manager
+        locationManager = (LocationManager)
+                getSystemService(Context.LOCATION_SERVICE);
+
+        // Button click
+        b1.setOnClickListener(view -> updateUI());
+
+        // Check location permission
+        checkAndRequestLocationPermission();
+    }
+
+    // CHECK LOCATION PERMISSION
+    private void checkAndRequestLocationPermission() {
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                    },
+                    LOCATION_PERMISSION_REQUEST_CODE
+            );
+
+        } else {
+            startLocationUpdates();
+        }
+    }
+
+    // START LOCATION UPDATES
+    private void startLocationUpdates() {
+        if (locationManager == null) {
+            return;
+        }
+
+        try {
+            // Get last known GPS location
+            Location lastGps = null;
+            Location lastNetwork = null;
+
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED) {
+
+                lastGps = locationManager.getLastKnownLocation(
+                        LocationManager.GPS_PROVIDER
+                );
+            }
+
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED) {
+
+                lastNetwork = locationManager.getLastKnownLocation(
+                        LocationManager.NETWORK_PROVIDER
+                );
+            }
+
+            // Use GPS location if available
+            Location lastLocation = lastGps != null
+                    ? lastGps : lastNetwork;
+
+            if (lastLocation != null) {
+                lat = lastLocation.getLatitude();
+                longg = lastLocation.getLongitude();
+                updateUI();
+            }
+
+            // Request GPS updates when fine permission is granted
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+                    && locationManager.isProviderEnabled(
+                    LocationManager.GPS_PROVIDER)) {
+
+                locationManager.requestLocationUpdates(
+                        LocationManager.GPS_PROVIDER,
+                        2000,
+                        1,
+                        this
+                );
+            }
+
+            // Request network location updates
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+                    && locationManager.isProviderEnabled(
+                    LocationManager.NETWORK_PROVIDER)) {
+
+                locationManager.requestLocationUpdates(
+                        LocationManager.NETWORK_PROVIDER,
+                        2000,
+                        1,
+                        this
+                );
+            }
+
+        } catch (SecurityException e) {
+            Log.e("GPS_TRACE", "Location permission error", e);
+        } catch (Exception e) {
+            Log.e("GPS_TRACE", "Error starting location updates", e);
+        }
+    }
+
+    // UPDATE SCREEN
+    private void updateUI() {
+        t1.setText("Latitude = " + lat);
+        t2.setText("Longitude = " + longg);
+
+        evaluateGeofence(lat, longg);
+    }
+
+    // COLLEGE GEOFENCE
+    private void evaluateGeofence(
+            double currentLat,
+            double currentLong) {
+
+        // Do not evaluate the default coordinates as a real location
+        if (currentLat == 0.0 && currentLong == 0.0) {
+            t3.setText("Waiting for location...");
+            return;
+        }
+
+        // College location
+        Location collegeLocation = new Location("College");
+        collegeLocation.setLatitude(COLLEGE_LAT);
+        collegeLocation.setLongitude(COLLEGE_LONG);
+
+        // Current device location
+        Location currentLocation = new Location("Current Location");
+        currentLocation.setLatitude(currentLat);
+        currentLocation.setLongitude(currentLong);
+
+        // Calculate distance
+        float distance = currentLocation.distanceTo(collegeLocation);
+
+        // Check college boundary
+        if (distance <= COLLEGE_RADIUS) {
+            t3.setText(
+                    "Harshita you are inside the College Area :)"
+            );
+        } else {
+            t3.setText(
+                    "Harshita you are outside the College Area :("
+            );
+        }
+
+        // Log distance
+        Log.d(
+                "GPS_TRACE",
+                "Distance from college = " + distance + " meters"
+        );
+    }
+
+    // LOCATION CHANGED
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        lat = location.getLatitude();
+        longg = location.getLongitude();
+
+        Log.d(
+                "GPS_TRACE",
+                "Latitude = " + lat + " | Longitude = " + longg
+        );
+
+        runOnUiThread(this::updateUI);
+    }
+
+    // PERMISSION RESULT
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode,
+            @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
+
+        super.onRequestPermissionsResult(
+                requestCode,
+                permissions,
+                grantResults
+        );
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+
+            boolean granted = false;
+
+            for (int i = 0; i < permissions.length; i++) {
+                if ((permissions[i].equals(
+                        Manifest.permission.ACCESS_FINE_LOCATION)
+                        || permissions[i].equals(
+                        Manifest.permission.ACCESS_COARSE_LOCATION))
+                        && grantResults.length > i
+                        && grantResults[i]
+                        == PackageManager.PERMISSION_GRANTED) {
+                    granted = true;
+                    break;
+                }
+            }
+
+            if (granted) {
+                startLocationUpdates();
+            } else {
+                Toast.makeText(
+                        this,
+                        "Location permission is required.",
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        }
+    }
+
+    // STOP LOCATION UPDATES
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (locationManager != null) {
+            locationManager.removeUpdates(this);
+        }
+    }
+
+    // RESTART LOCATION UPDATES
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (locationManager != null
+                && (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED)) {
+
+            startLocationUpdates();
+        }
+    }
+}
